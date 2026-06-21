@@ -382,6 +382,113 @@ Successfully tagged instance <instance-id>
 
 ---
 
+# 4. Sentiment Analysis Using AWS Lambda and Amazon Comprehend
+
+## Objective
+
+Analyze the sentiment of user reviews using Amazon Comprehend and AWS Lambda.
+
+---
+
+## Step 1: Create IAM Role
+
+1. Open the IAM Console.
+2. Create a new role for **Lambda**.
+3. Attach the following policies:
+
+   * AWSLambdaBasicExecutionRole
+   * ComprehendFullAccess
+4. Name the role **LambdaComprehendRole**.
+
+---
+
+## Step 2: Create Lambda Function
+
+1. Open the Lambda Console.
+2. Click **Create Function**.
+3. Select **Author from Scratch**.
+4. Configure:
+
+   * Function Name: `ReviewSentimentAnalyzer`
+   * Runtime: `Python 3.x`
+   * Execution Role: `LambdaComprehendRole`
+
+---
+
+## Step 3: Add Lambda Code
+
+Paste the following code and deploy:
+
+```python
+import boto3
+
+comprehend = boto3.client('comprehend')
+
+def lambda_handler(event, context):
+
+    review = event.get('review', '')
+
+    response = comprehend.detect_sentiment(
+        Text=review,
+        LanguageCode='en'
+    )
+
+    sentiment = response['Sentiment']
+
+    print(f"Review: {review}")
+    print(f"Sentiment: {sentiment}")
+
+    return {
+        'statusCode': 200,
+        'review': review,
+        'sentiment': sentiment
+    }
+```
+
+---
+
+## Step 4: Test the Function
+
+Create a test event:
+
+```json
+{
+  "review": "This product is amazing and works perfectly."
+}
+```
+
+Run the test and verify the output shows:
+
+```json
+{
+  "statusCode": 200,
+  "sentiment": "POSITIVE"
+}
+```
+
+---
+
+## Step 5: Check Logs
+
+1. Open CloudWatch.
+2. Navigate to:
+
+```text
+Logs → Log Groups → /aws/lambda/ReviewSentimentAnalyzer
+```
+
+3. Verify the logs contain:
+
+```text
+Review: This product is amazing and works perfectly.
+Sentiment: POSITIVE
+```
+
+---
+
+
+
+
 
 
 
