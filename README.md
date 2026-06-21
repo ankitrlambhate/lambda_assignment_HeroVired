@@ -274,6 +274,115 @@ Deleted Snapshot: snap-yyyyyyyy
 
 ---
 
+# 3. Auto-Tagging EC2 Instances on Launch Using AWS Lambda and Boto3
+
+## Objective
+
+Automatically tag newly launched EC2 instances with:
+
+* LaunchDate (current date)
+* Environment = DEVELOPMENT
+
+---
+
+## Step 1: Create IAM Role
+
+1. Open the IAM Console.
+2. Create a new role for Lambda.
+3. Attach the following policies:
+
+   * AmazonEC2FullAccess
+   * AWSLambdaBasicExecutionRole
+4. Name the role:
+
+   ```
+   LambdaEC2AutoTagRole
+   ```
+
+---
+
+## Step 2: Create Lambda Function
+
+1. Open the Lambda Console.
+2. Click **Create Function**.
+3. Select **Author from Scratch**.
+4. Enter:
+
+   * Function Name: `EC2AutoTagger`
+   * Runtime: Python 3.x
+5. Select the IAM role created earlier.
+6. Paste the provided Python code.
+7. Deploy the function.
+
+---
+
+## Step 3: Create EventBridge Rule
+
+1. Open the EventBridge Console.
+
+2. Click **Create Rule**.
+
+3. Configure:
+
+   * Rule Name: `EC2LaunchTrigger`
+   * Event Bus: `default`
+   * Rule Type: `Rule with an event pattern`
+
+4. Use the following event pattern:
+
+```json
+{
+  "source": ["aws.ec2"],
+  "detail-type": ["EC2 Instance State-change Notification"],
+  "detail": {
+    "state": ["running"]
+  }
+}
+```
+
+5. Select the Lambda function `EC2AutoTagger` as the target.
+6. Create the rule.
+
+---
+
+## Step 4: Test the Solution
+
+1. Launch a new EC2 instance.
+2. Wait for the instance to reach the **Running** state.
+3. EventBridge will trigger the Lambda function.
+4. Lambda will automatically add the tags.
+
+---
+
+## Step 5: Verify Tags
+
+1. Open the EC2 Console.
+2. Select the newly launched instance.
+3. Open the **Tags** tab.
+4. Verify the following tags exist:
+
+| Key         | Value        |
+| ----------- | ------------ |
+| LaunchDate  | Current Date |
+| Environment | DEVELOPMENT  |
+
+---
+
+## Monitoring
+
+To verify execution:
+
+1. Open CloudWatch Logs.
+2. Navigate to the Lambda log group.
+3. Confirm the message:
+
+```
+Successfully tagged instance <instance-id>
+```
+
+---
+
+
 
 
 
