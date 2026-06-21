@@ -76,7 +76,6 @@ ec2 = boto3.client('ec2')
 
 def lambda_handler(event, context):
 
-    # Find running instances tagged Auto-Stop
     stop_response = ec2.describe_instances(
         Filters=[
             {
@@ -100,7 +99,6 @@ def lambda_handler(event, context):
         ec2.stop_instances(InstanceIds=stop_instances)
         print(f"Stopped Instances: {stop_instances}")
 
-    # Find stopped instances tagged Auto-Start
     start_response = ec2.describe_instances(
         Filters=[
             {
@@ -175,6 +173,109 @@ Started Instances: ['i-0fedcba9876543210']
 ```
 
 ---
+
+# 2. AWS Lambda EBS Snapshot Automation
+
+## Objective
+
+Automate the creation of EBS snapshots and delete snapshots older than 30 days using AWS Lambda, Boto3, and Amazon EventBridge.
+
+---
+
+## Step 1: Identify EBS Volume
+
+1. Navigate to **EC2 Console** → **Volumes**.
+2. Select the EBS volume to back up.
+3. Copy the Volume ID.
+
+Example:
+
+```text
+vol-0123456789abcdef0
+```
+
+---
+
+## Step 2: Create IAM Role
+
+1. Open **IAM Console**.
+2. Create a new role for **Lambda**.
+3. Attach the policy:
+
+```text
+AmazonEC2FullAccess
+```
+
+4. Save the role.
+
+---
+
+## Step 3: Create Lambda Function
+
+1. Open **AWS Lambda**.
+2. Click **Create Function**.
+3. Choose **Author from Scratch**.
+4. Runtime: **Python 3.x**
+5. Assign the IAM role created earlier.
+
+---
+
+## Step 4: Add Lambda Code
+
+The Lambda function performs the following actions:
+
+* Creates a snapshot of the specified EBS volume.
+* Tags the snapshot.
+* Identifies snapshots older than 30 days.
+* Deletes outdated snapshots.
+* Logs created and deleted snapshot IDs.
+
+# Note: Update the code with your EBS Volume ID before deployment.
+
+Deploy the function after saving the code.
+
+---
+
+## Step 5: Test the Function
+
+1. Create a test event.
+2. Use the following event payload:
+
+```json
+{}
+```
+
+3. Execute the test.
+4. Verify successful execution in Lambda logs.
+
+---
+
+## Step 6: Verify Snapshot Creation
+
+1. Navigate to **EC2 Console** → **Snapshots**.
+2. Confirm that a new snapshot has been created.
+3. Verify the snapshot contains the expected tags.
+
+---
+
+## Step 7: Monitor Execution
+
+1. Open the Lambda function.
+2. Navigate to **Monitor**.
+3. View **CloudWatch Logs**.
+4. Confirm snapshot creation and cleanup activities.
+
+Example log output:
+
+```text
+Created Snapshot: snap-xxxxxxxx
+Deleted Snapshot: snap-yyyyyyyy
+```
+
+---
+
+
+
 
 
 
